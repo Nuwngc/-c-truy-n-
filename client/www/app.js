@@ -9,7 +9,7 @@ const staff=()=>U&&['mod','admin'].includes(U.role),canPost=()=>U&&['author','mo
 async function home(){clearTimeout(timer);try{U=T?await api('/me'):null}catch{U=null}
  $('#nav').innerHTML=U?`<button onclick="go(me)">${esc(U.name)} · ${esc(U.realm)}</button>`:'';
  if(!U)return login();const s=await api('/stories');
- M.innerHTML=`<div class="row"><button onclick="go(rank)">🏆 BXH</button>${canPost()?'<button onclick="write()">✍️ Đăng truyện</button>':''}${staff()?'<button onclick="go(users)">👥 Quản lý</button>':''}</div>`+
+ M.innerHTML=`<div class="row"><button onclick="go(rank)">🏆 BXH</button>${canPost()?'<button onclick="newStory()">✍️ Đăng truyện</button>':''}${staff()?'<button onclick="go(users)">👥 Quản lý</button>':''}</div>`+
  s.map(x=>`<div class="card" onclick="go(()=>story(${x.id}))"><b>${esc(x.title)}</b><br><small>${esc(x.author)} · ${x.n} chương</small><p>${esc(x.desc)}</p></div>`).join('')}
 function login(){M.innerHTML=`<div class="card"><input id="sv" placeholder="Địa chỉ server (để trống nếu cùng domain)" value="${esc(API)}"><input id="un" placeholder="Tên đăng nhập"><input id="pw" type="password" placeholder="Mật khẩu"><div class="row"><button onclick="auth('login')">Đăng nhập</button><button onclick="auth('register')">Đăng ký</button></div></div>`}
 async function auth(k){API=$('#sv').value.trim().replace(/\/$/,'');localStorage.api=API;try{const r=await api('/'+k,'POST',{name:$('#un').value,pass:$('#pw').value});T=localStorage.t=r.token;home()}catch(e){alert(e.message)}}
@@ -28,7 +28,7 @@ async function read(id){clearTimeout(timer);const c=await api('/chapters/'+id);c
 async function prog(t){const r=await api('/progress','POST',{chapterId:cur.id,type:t}).catch(()=>0);if(r&&r.gain){U=r.user;toast(`+${r.gain} exp tu vi`)}}
 async function me(){U=await api('/me');M.innerHTML=`<button onclick="home()">←</button><div class="card"><h3>${esc(U.name)} <small>(${U.role})</small></h3><p>${esc(U.realm)}</p><div class="bar"><i style="width:${U.exp/U.need*100}%"></i></div><small>${U.exp}/${U.need} exp</small></div><button onclick="T='';localStorage.t='';home()">Đăng xuất</button>`}
 async function rank(){const r=await api('/rank');M.innerHTML='<button onclick="home()">←</button>'+r.map((x,i)=>`<div class="card">#${i+1} ${esc(x.name)} — ${esc(x.realm)}</div>`).join('')}
-function write(){M.innerHTML=`<button onclick="home()">←</button><div class="card"><input id="st" placeholder="Tên truyện"><textarea id="sd" rows="4" placeholder="Giới thiệu"></textarea><button onclick="go(mk)">Tạo truyện</button></div>`}
+function newStory(){M.innerHTML=`<button onclick="home()">←</button><div class="card"><input id="st" placeholder="Tên truyện"><textarea id="sd" rows="4" placeholder="Giới thiệu"></textarea><button onclick="go(mk)">Tạo truyện</button></div>`}
 async function mk(){const s=await api('/stories','POST',{title:$('#st').value,desc:$('#sd').value});story(s.id)}
 async function addCh(id){await api(`/stories/${id}/chapters`,'POST',{title:$('#ct').value,content:$('#cc').value});toast('Đã đăng chương');story(id)}
 async function del(k,i,sid){if(!confirm('Xoá?'))return;await api(`/${k}/${i}`,'DELETE');sid?story(sid):home()}
